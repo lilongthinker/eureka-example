@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+
+  labels:
+    derrick.service: eureka-server
+    app: eureka-server
+  name: eureka-server
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        derrick.service: eureka-server
+        app: eureka-server
+      annotations:
+        ahasPilotAutoEnable: 'on'  #启用ahas  serverless集群暂时不支持该方法
+        ahasAppName: eureka-server-ahas  #ahas里的应用名
+        armsPilotAutoEnable: 'on'  #启用arms serverless集群暂时不支持该方法
+        armsPilotCreateAppName: eureka-server-arms #arms里的应用名
+    spec:
+      containers:
+      - image: registry-vpc.cn-beijing.aliyuncs.com/k8s-demo-dingyue/eureka-server:v5
+        name: web
+        ports:
+        - containerPort: 8080
+        env:
+          - name: msg
+            value: from terway
+          - name: TZ
+            value: Asia/Shanghai
+          ######### 配置 环境变量 ###########  仅需要如下配置环境变量即可，注意开头必须是“aliyun_logs_”开头。其中 test-stdout 和 test-file可以自己定制
+          - name: aliyun_logs_eureka-server-stdout
+            value: stdout
+          - name: aliyun_logs_eureka-server-file
+            value: /logs/*.log
+          - name: aliyun_logs_eureka-server-stdout_machinegroup
+            value: eureka-server
+          ######### 配置vulume mount #######
+        volumeMounts:
+          - name: volume-sls
+            mountPath: /logs
+      volumes:
+        - name: volume-sls
+          emptyDir: {}
+
+
